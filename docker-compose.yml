@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - microservices-network
+  eureka:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+    depends_on:
+        - config-server    
+  validator:
+    build: ./microservicio-and-eval
+    ports:
+      - "8083:8083"
+    networks:
+      - microservices-network
+    depends_on:
+          - eureka
+          - config-server
+  stats:
+    build: ./microservicio-stats
+    ports:
+      - "8081:8081"
+    networks:
+      - microservices-network
+    depends_on:
+      - eureka
+      - config-server
+  users:
+    build: ./microservicio-usuarios
+    ports:
+      - "8082:8082"
+    networks:
+      - microservices-network
+    depends_on:
+      - eureka
+      - config-server
+networks:
+  microservices-network:
+    driver: bridge

@@ -1,0 +1,2 @@
+INSERT INTO dna_analyzer.tbl_ResultMutant (dna, is_mutant, date_create) VALUES ('ATGCGA,CAGTGC,TTATGT,AGAAGG,CCCCTA,TCACTG', TRUE, CURRENT_TIMESTAMP);
+INSERT INTO dna_analyzer.tbl_ResultMutant (dna, is_mutant, date_create) VALUES ('TTTTTT,GCTATC,AAAAGT,TGCAGG,CGCCTA,TCACTG', FALSE, CURRENT_TIMESTAMP);
