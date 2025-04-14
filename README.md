@@ -16,8 +16,8 @@ Este proyecto está basado en una arquitectura de microservicios implementada co
 Se crearon tres microservicios con sus propias configuraciones (`application.properties`) y bases de datos:
 
 ### 1. **microservicio-usuarios**
-- **POST** `/api/createUser`: Crea un nuevo usuario.
-- **GET** `/api/user/{id}`: Obtiene información de un usuario por su identificación.
+- **POST** `/users/createUser`: Crea un nuevo usuario.
+- **GET** `/users/user/{id}`: Obtiene información de un usuario por su identificación.
 
 
 ### 2. **microservicio-adn**
