@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [ 'microservicio-and-val', 'microservicio-stats', 'microservicio-usuarios' ]
+        module: [ 'microservicio-and-eval', 'microservicio-stats', 'microservicio-usuarios' ]
 
     steps:
       - uses: actions/checkout@v3
