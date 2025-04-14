@@ -2,18 +2,16 @@ name: Pruebas Automatizadas
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [ 'microservicio-adn-val', 'microservicio-stats', 'microservicio-usuarios' ] # Reemplaza con los nombres reales de tus módulos
-
-      name: Test ${{ matrix.module }}
+        module: [ 'microservicio-adn-val', 'microservicio-stats', 'microservicio-usuarios' ]
 
     steps:
       - uses: actions/checkout@v3
