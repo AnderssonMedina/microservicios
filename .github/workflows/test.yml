@@ -24,6 +24,8 @@ jobs:
 
       - name: Otorgar permisos de ejecución para gradlew
         run: chmod +x ./gradlew
+        working-directory: ${{ matrix.module }}
 
       - name: Ejecutar pruebas Gradle
-        run: ./gradlew test 
+        run: ./gradlew test
+        working-directory: ${{ matrix.module }}
