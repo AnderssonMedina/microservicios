@@ -1,83 +1,177 @@
-#PROYECTO UNIVERSIDAD
+# Proyecto de Microservicios - Análisis de ADN Mutante
 
-El microservicio dnaevaluator expone dos servicios rest. Su estructura de carpetas consta de 3 capas, implementando así una arquitectura limpia donde la capa de dominio es independiente del framework
+Este proyecto está basado en una arquitectura de microservicios implementada con Spring Boot y Spring Cloud. Su propósito es analizar secuencias de ADN para determinar si pertenecen a mutantes, así como registrar estadísticas y datos de usuarios.
 
-application: En esta capa se encuentra el controller(MutantController) que es la puerta de entrada o adaptador primario, obtiene los datos para enviarlos a la capa de dominio.
+## Repositorios del Proyecto
 
-domain: En ésta se encuentra la clase que contiene la lógica de negocio (MutantService), los modelos y una interfaz que se inyecta a través del constructor para posteriormente comúnicarse con la capa de infraestructura.
+- [Microservicios](https://github.com/AnderssonMedina/microservicios)
+- [Eureka Server](https://github.com/AnderssonMedina/eureka-server)
+- [Config Server](https://github.com/AnderssonMedina/spring-cloud-config)
 
-infrastructure: En ésta se encuentra la clase que se encarga de transformar los modelos de negocio en DTOs(ResultMutantService) para luego hacer los procesamientos en base de datos y entregar respuesta a la capa de dominio.
+---
 
-#Especificaciones
+## Microservicios
 
-Este proyecto fue desarrollado en el siguiente entorno:
+Se crearon tres microservicios con sus propias configuraciones (`application.properties`) y bases de datos:
 
-Spring Boot versión 3.4.3
+### 1. **microservicio-usuarios**
+- **POST** `/api/createUser`: Crea un nuevo usuario.
+- **GET** `/api/user/{id}`: Obtiene información de un usuario por su identificación.
 
-Java versión 17
 
-Gradle versión 8.13
+### 2. **microservicio-adn**
+- **POST** `/api/mutant`: Analiza una secuencia de ADN.
+  - Respuesta `200 OK` si es mutante.
+  - Respuesta `403 Forbidden` si no lo es.
+  - Respuesta `400 Bad Request`: Secuencia inválida.
 
-Base de datos: h2-console
+### 3. **microservicio-stats**
+- **GET** `/api/stats`: Devuelve estadísticas de ADN analizados.
 
-IDE de desarrollo: IntelliJ IDEA Community Edition 2024.3
+---
 
-#SERVICIOS REST
+## Arquitectura
 
-url: https://dnaevaluator.rj.r.appspot.com/api/mutant
-Descripción: Se encarga de evaluar si un ADN ingresado pertenece a un humano o mutante, a su vez guarda en base de datos el resultado. Si se consulta nuevamente el ADN éste recupera la información de la BD.
+Se sigue una arquitectura limpia con tres capas:
 
-Validaciones: Se valida el ADN ingresado. éste debe cumplir con la regla de negocio especificada: "En donde recibirás como parámetro un array de Strings que representan cada fila de una tabla de (NxN) con la secuencia del ADN. Las letras de los Strings solo pueden ser: (A,T,C,G),"
+- **application**: Controladores.
+- **domain**: Modelos y lógica de negocio.
+- **infrastructure**: Conexiones con la base de datos y servicios externos.
 
-parámetros: String [] dna
+---
 
-método: POST
+## Comunicación entre Microservicios
 
-Content-Type: application/json
+- El servicio `adn` consume los servicios `usuarios` y `stats` utilizando **FeignClient** para obtener información del usuario y registrar el resultado del análisis.
+- Interfaces definidas para facilitar la comunicación.
+- Comunicación habilitada por **Eureka** para descubrimiento de servicios.
 
-Posibles respuestas:
+---
 
-STATUS 200: Cuando el ADN ingresado es mutante(más de una secuencia de cuatro letras iguales)
+## Configuración Centralizada
 
-STATUS 403: Cuando el ADN ingresado es humano.
+- Se implementó un **config-server** con repositorio remoto en GitHub.
+- Cada microservicio incluye un archivo `bootstrap.properties` para conectarse al servidor de configuración.
 
-STATUS 400: Cuando la secuencia ingresada no cumple con las especificaciones de la regla de negocio.
+---
 
-url: https://dnaevaluator.rj.r.appspot.com/api/stats
-Descripción: Retorna en un objeto tipo json las estadísticas según la cantidad de humanos y mutantes evaluados, esta información se recupera de la base de datos
+## Descubrimiento de Servicios con Eureka
 
-parámetros: No recibe
+- Se creó un servidor Eureka para registrar todos los microservicios.
+- Cada microservicio se registró como cliente de Eureka.
+- La comunicación entre servicios se realiza sin URLs directas gracias al descubrimiento dinámico.
 
-método: GET
+---
 
-respuesta:
+## Pruebas de Endpoints
 
-STATUS 200
+### Crear Usuario
 
-Content-Type: application/json
+```bash
+curl --location 'http://localhost:8082/api/createUser' \
+--header 'Content-Type: application/json' \
+--data '{
+  "identify": "102043617",
+  "name": "Andersson mndina",
+  "age": "34"
+}'
+```
 
-{ "count_mutant_dna": 5, "count_human_dna": 8, "ratio": 0.63 }
+### Validar ADN Mutante
 
-#AUTOMATIZACIÓN DE PRUEBAS
+```bash
+curl --location 'http://localhost:8083/api/mutant?identify=102043617' \
+--header 'Content-Type: application/json' \
+--data '{
+   "dna":["ATGCGA","CAGTGC","TTATGT","AGAAGG","CCCCTA","TCACTC"]
+}'
+```
 
-El porcentaje total de lineas de código cubiertas con pruebas unitarias es del 92%
+---
 
-#Ejecutar pruebas locales
+## Monitorización y Métricas
 
-Puede realizarse de dos maneras:
+- Se agregó la dependencia **Spring Boot Actuator** para exponer `/actuator/health` y métricas.
+- Integración con **Prometheus** y **Grafana** para visualización en tiempo real.
+  - Grafana: http://localhost:3000
+  - Prometheus: http://localhost:9090/
 
-1. abrir la consola en intellij y ejecutar el comando ./gradlew clean test, este comando primero realizara una limpieza del proyecto y luego ejecutara las pruebas si el resultado fue exitoso se mostrara el mensaje "BUILd SUCCESSFUL"
+---
 
-2. Buscar en las tareas de gradle task - verificación -jacocoTestReport, esta opción nos entregara un informe detallado de la cobertura de pruebas en cada uno de los archivos, el informe lo encuentra en la ruta build - reports - jacoco - test - html - index html, se abre en un navegador para ver mejor los resultados
+## Despliegue con Docker
 
-#Ejecutar pruebas Remotas
+### Dockerfile
 
-Dado el archivo test.yml que creamos para correr las pruebas automatizadas, cuando se suba cualquier commit, dirigite github - actions - e inmediatamente veremos como se ejecuta el pipiline, se configura todo el entorno para correr las pruebas e internamente se corre el comando ./gradlew test, al final entrega el resultado, si fue exitoso o fallido.
+Cada microservicio incluye un archivo `Dockerfile` para construir su imagen a partir del JAR correspondiente.
 
-Este archivo define un flujo de trabajo (workflow) que se ejecuta automáticamente cuando se cumplen ciertas condiciones en tu repositorio, tales como 
+### Docker Compose
 
-push: Cuando se envían cambios a una rama del repositorio.
+Se creó un archivo `docker-compose.yml` que:
 
-pull_request: Cuando se abre o actualiza un pull request.
-    
+- Levanta los tres microservicios.
+- Incluye `config-server` y `eureka-server`.
+- Permite levantar todo el entorno con:
+
+```bash
+docker-compose build
+docker-compose up
+```
+
+---
+
+## Especificaciones Técnicas
+
+- **Spring Boot**: 3.4.3  
+- **Java**: 17  
+- **Gradle**: 8.13  
+- **Base de datos**: H2 Console  
+- **IDE**: IntelliJ IDEA Community Edition 2024.3  
+
+---
+
+## Pruebas y Verificación
+
+- Se probaron todos los endpoints con Postman.
+- Verificación correcta de:
+  - Comunicación entre microservicios.
+  - Registro en Eureka.
+  - Configuración centralizada.
+  - Métricas en Grafana.
+  - Contenedores corriendo correctamente vía Docker Compose.
+
+---
+
+## Automatización de Pruebas
+
+- **Cobertura total**: 92% de líneas cubiertas con pruebas unitarias.
+
+### Ejecutar Pruebas Locales
+
+1. Desde consola:
+```bash
+./gradlew clean test
+```
+   Si es exitoso, mostrará `BUILD SUCCESSFUL`.
+
+2. Desde Gradle:
+   - Navegar a: `Tasks > verification > jacocoTestReport`
+   - El informe se encuentra en:
+     ```
+     build/reports/jacoco/test/html/index.html
+     ```
+
+### Ejecutar Pruebas Remotas
+
+Se utiliza `test.yml` para automatizar pruebas con GitHub Actions. El flujo se activa con:
+
+- `push`: Al hacer commit.
+- `pull_request`: Al crear o actualizar un pull request.
+
+Internamente se ejecuta el comando:
+
+```bash
+./gradlew test
+```
+
+---
 
