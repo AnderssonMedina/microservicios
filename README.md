@@ -6,7 +6,8 @@ Este proyecto está basado en una arquitectura de microservicios implementada co
 
 - [Microservicios](https://github.com/AnderssonMedina/microservicios)
 - [Eureka Server](https://github.com/AnderssonMedina/eureka-server)
-- [Config Server](https://github.com/AnderssonMedina/spring-cloud-config)
+- [Spring Cloud Config ](https://github.com/AnderssonMedina/spring-cloud-config)
+- [Config Server](https://github.com/AnderssonMedina/config-server)
 
 ---
 
