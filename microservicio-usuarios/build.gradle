@@ -52,3 +52,9 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+configurations {
+    testRuntimeClasspath {
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+    }
+}
